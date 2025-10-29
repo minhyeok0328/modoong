@@ -1,0 +1,18 @@
+stages:
+  - build
+
+build:
+  stage: build
+  image: node:22-alpine
+  variables:
+    PUBLIC_URL: '/'
+  script:
+    - npm install -g pnpm
+    - pnpm install
+    - pnpm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  only:
+    - main

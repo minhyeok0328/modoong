@@ -1,0 +1,12 @@
+export { default as Default } from './Default';
+export { default as RegisterLayout } from './RegisterLayout';
+export { default as ReservationLayout } from './ReservationLayout';
+export { default as ReservationCompleteLayout } from './ReservationCompleteLayout';
+export { default as LoungeLayout } from './LoungeLayout';
+export { default as FriendFinderLayout } from './FriendFinderLayout';
+export { default as MateFinderLayout } from './MateFinderLayout';
+export { default as MateApplicationLayout } from './MateApplicationLayout';
+export { default as ChatLayout } from './ChatLayout';
+export { default as LoungePostLayout } from './LoungePostLayout';
+export { default as MyPageLayout } from './MyPageLayout';
+export { default as SimpleLayout } from './SimpleLayout';

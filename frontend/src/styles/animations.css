@@ -1,0 +1,70 @@
+@theme {
+  --animate-fade-in: fade-in 0.25s ease-in-out forwards;
+  --animate-fade-out: fade-out 0.15s ease-in-out forwards;
+  --animate-popup-in: popup-in 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  --animate-popup-out: popup-out 0.15s cubic-bezier(0.4, 0.0, 1, 1) forwards;
+  --animate-slide-up: slide-up 0.5s ease-out forwards;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, -1rem, 0);
+      will-change: transform, opacity;
+    }
+    100% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      will-change: transform, opacity;
+    }
+  }
+
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      will-change: transform, opacity;
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(0, 1rem, 0);
+      will-change: transform, opacity;
+    }
+  }
+
+  @keyframes popup-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.9) translateY(-10px);
+      will-change: transform, opacity;
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      will-change: transform, opacity;
+    }
+  }
+
+  @keyframes popup-out {
+    0% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      will-change: transform, opacity;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.95) translateY(-5px);
+      will-change: transform, opacity;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100vh) scale(1);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+}

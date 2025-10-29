@@ -1,0 +1,85 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import './animations.css';
+@import './fonts.css';
+@import './colors.css';
+
+#root {
+  position: absolute;
+  width: 100%;
+  max-width: 480px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+}
+
+html,
+body {
+  font-family: 'Pretendard-Regular', sans-serif;
+  user-select: none;
+  /* iOS safe area 대응 */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  opacity: 0.6;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.12);
+  opacity: 0.8;
+}
+
+/* 스크롤바 숨김 클래스 */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Screen reader only 접근성 클래스 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  left: -9999px;
+  top: -9999px;
+}
+
+/* iOS 키보드 대응 */
+@supports (padding: max(0px)) {
+  .keyboard-adjust {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* iOS 키보드가 올라올 때 스크롤 영역 조정 */
+.message-input-container {
+  transition: transform 0.3s ease-out, bottom 0.3s ease-out;
+}
