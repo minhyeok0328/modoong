@@ -24,6 +24,12 @@ import {
   ActivitySchedule,
   RegisterComplete,
   SportPreference,
+  CommonOnboarding,
+  RoleSelection,
+  TermsAndConditions,
+  RoleQuestions,
+  Welcome,
+  Promises,
 } from '@/pages/register';
 import {
   Search,
@@ -139,6 +145,31 @@ export const routes = [
       {
         path: 'register-complete',
         element: <RegisterComplete />,
+      },
+      // New routes for UserType 2
+      {
+        path: 'common-onboarding',
+        element: <CommonOnboarding />,
+      },
+      {
+        path: 'role-selection',
+        element: <RoleSelection />,
+      },
+      {
+        path: 'terms-and-conditions',
+        element: <TermsAndConditions />,
+      },
+      {
+        path: 'role-questions',
+        element: <RoleQuestions />,
+      },
+      {
+        path: 'welcome',
+        element: <Welcome />,
+      },
+      {
+        path: 'promises',
+        element: <Promises />,
       },
     ],
   },

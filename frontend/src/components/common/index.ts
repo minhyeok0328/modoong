@@ -1,6 +1,6 @@
 export { default as Button } from './button';
 export { default as Input } from './input';
-export { default as Checkbox } from './checkbox';
+export { default as Checkbox, CheckItem } from './checkbox';
 export { default as Navigation } from './navigation';
 export { default as PageTitle } from './page-title';
 export { default as Calendar } from './calendar';
@@ -23,3 +23,4 @@ export { default as MessageInput } from './message-input';
 export { default as ProgressBar } from './progress-bar';
 export { default as SpeechBubble } from './speech-bubble';
 export { default as NotificationPopup } from './notification-popup';
+export { ReportPopup } from './popup';

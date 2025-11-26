@@ -82,6 +82,7 @@ export default function ActivitySchedule() {
           </>
         }
         aria-label={`더 친해진 것 같아 모둥이는 기분이 좋아요:) ${registerForm.name}님은 어느 시간대에 주로 운동하세요?`}
+        subText="복수선택 가능합니다"
         className="mb-10"
       />
       <div className="flex flex-wrap justify-between gap-4">

@@ -1,9 +1,9 @@
 import { Card, Checkbox, Tag, Radio, Button, SharePopup } from '@/components/common';
 import { CourseInfo } from '@/components/reservation';
-import { FaEye, FaHeart, FaShareAlt, FaStar } from 'react-icons/fa';
+import { FaEye, FaHeart, FaShareAlt, FaStar, FaBullhorn } from 'react-icons/fa';
 import { FiMapPin } from 'react-icons/fi';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { Calendar } from '@/components/common';
@@ -15,13 +15,21 @@ import {
   GetSportsFacilityVars,
 } from '@/graphql/queries/sportsFacility';
 import { facilityType, FacilityTypeProps } from '@/utils/facilityType';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { addReservationAtom, ReservationItem } from '@/atoms/reservation';
+import { userAtom } from '@/atoms/user';
 import { createReservationChatRoomAtom } from '@/atoms/chat';
 import { createReservationChatRoom } from '@/utils/createReservationChatRoom';
 import { filterSportsFacilityAmenities } from '@/utils/amenitiesFilter';
 import { getFacilityImageBySeed } from '@/utils/facilityImages';
 import { getReviewMessageByFacilityId } from '@/utils/reviewMessages';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { ReportPopup } from '@/components/common/popup';
+import { reportsAtom, reportPopupStateAtom } from '@/atoms/report';
+import { getImageFromIDB } from '@/utils/indexedDB';
 
 dayjs.locale('ko');
 
@@ -38,6 +46,28 @@ const FACILITY_INFO = {
   amenities: ['휠체어진입로', '엘리베이터', '장애인주차구역', '장애인편의점'],
 };
 
+const RoadviewContainer = ({ lat, lng }: { lat: number; lng: number }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const { kakao } = window as any;
+    if (!kakao || !kakao.maps) return;
+
+    const roadview = new kakao.maps.Roadview(containerRef.current);
+    const roadviewClient = new kakao.maps.RoadviewClient();
+    const position = new kakao.maps.LatLng(lat, lng);
+
+    roadviewClient.getNearestPanoId(position, 50, (panoId: any) => {
+      if (panoId) {
+        roadview.setPanoId(panoId, position);
+      }
+    });
+  }, [lat, lng]);
+
+  return <div ref={containerRef} style={{ width: '100%', height: '300px' }} />;
+};
+
 export default function FacilityDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -50,6 +80,11 @@ export default function FacilityDetail() {
   const navigate = useNavigate();
   const [, addReservation] = useAtom(addReservationAtom);
   const [, createChatRoom] = useAtom(createReservationChatRoomAtom);
+  const reports = useAtomValue(reportsAtom);
+  const setReportPopupState = useSetAtom(reportPopupStateAtom);
+  const user = useAtomValue(userAtom);
+  const [reportedImage, setReportedImage] = useState<string | null>(null);
+
   const initialDateTime = useInitialDateTime({
     disabledSlots: [{ date: dayjs().format('YYYY-MM-DD'), times: ['10:00', '11:00'] }],
     minDate: dayjs().startOf('day').toDate(),
@@ -67,6 +102,14 @@ export default function FacilityDetail() {
       skip: !id,
     }
   );
+
+  const report = reports[id || ''];
+
+  useEffect(() => {
+    if (report?.hasEntrancePhoto && id) {
+      getImageFromIDB(id).then(setReportedImage);
+    }
+  }, [report, id]);
 
 
   // 주소복사 기능
@@ -94,11 +137,13 @@ export default function FacilityDetail() {
     setIsSharePopupOpen(!isSharePopupOpen);
   };
 
-  const handleStreetViewClick = () => {
-    if (sportsFacility?.streetViewUrl) {
-      window.open(sportsFacility.streetViewUrl, '_blank');
+  const handleReportClick = () => {
+    if (id) {
+      setReportPopupState({ isOpen: true, facilityId: id });
     }
   };
+
+
 
   const handleCourseSelect = (index: number) => {
     setSelectedCourses(prev =>
@@ -150,7 +195,7 @@ export default function FacilityDetail() {
     };
 
     addReservation(reservationData);
-    
+
     // 채팅방 생성
     if (selectedDate && data?.sportsFacility?.siDesc) {
       const chatRoom = createReservationChatRoom({
@@ -161,7 +206,7 @@ export default function FacilityDetail() {
       });
       createChatRoom(chatRoom);
     }
-    
+
     navigate(`/reservation/reservation-complete?reservationNumber=${reservationNumber}`);
   }
   if (loading) {
@@ -176,13 +221,30 @@ export default function FacilityDetail() {
   const isSportsFacility = data?.sportsFacility?.disabilitySportsFacility !== null;
   const rawAmenities = data?.sportsFacility?.amenities?.length ? data?.sportsFacility.amenities : FACILITY_INFO.amenities;
   const filteredAmenities = filterSportsFacilityAmenities(rawAmenities);
-  
+
   // 접근성 정보 처리
   let accessibilityItems: string[] = [];
   if (filteredAmenities.accessibility.length > 0) {
     accessibilityItems = filteredAmenities.accessibility.map(item => item.key);
   } else if (data?.sportsFacility?.disabilitySportsFacility?.disabilitySupport) {
     accessibilityItems = data.sportsFacility.disabilitySportsFacility.disabilitySupport.split(',').filter(item => item.trim() !== '');
+  }
+
+  // Merge reported amenities
+  if (report) {
+    if (report.disabledToilet) accessibilityItems.push('장애인 화장실');
+    if (report.disabledParking) accessibilityItems.push('장애인 주차장');
+    if (report.elevator) accessibilityItems.push('엘리베이터');
+    if (report.ramp) accessibilityItems.push('경사로');
+    if (report.wheelchairRental) accessibilityItems.push('휠체어 대여');
+    if (report.brailleSign) accessibilityItems.push('점자 안내판');
+    if (report.audioGuide) accessibilityItems.push('음성 안내 장치');
+    if (report.stairHeight) accessibilityItems.push(`계단 높이: ${report.stairHeight}`);
+    if (report.stairCount) accessibilityItems.push(`계단 수: ${report.stairCount}`);
+    if (report.otherAccessibility) accessibilityItems.push(report.otherAccessibility);
+
+    // Deduplicate
+    accessibilityItems = [...new Set(accessibilityItems)];
   }
 
   const sportsFacility = {
@@ -216,23 +278,33 @@ export default function FacilityDetail() {
       <section className="flex flex-col gap-2 px-6">
         <h2 className="text-xl font-bold flex items-center gap-2 justify-between relative">
           {sportsFacility?.facilityName}
-          <div className="relative">
-            <button
-              ref={shareButtonRef}
-              onClick={handleShareClick}
-              className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow"
-            >
-              <FaShareAlt className="w-4 h-4 text-gray-600" />
-            </button>
-            <div className="absolute top-10 right-0">
-              <SharePopup
-                isOpen={isSharePopupOpen}
-                onClose={() => setIsSharePopupOpen(false)}
-                triggerRef={shareButtonRef}
-                title={sportsFacility?.facilityName}
-                description={sportsFacility?.facilityAddress}
-                className="right-0"
-              />
+          <div className="flex gap-2 items-center">
+            {user.userType === 2 && (
+              <button
+                onClick={handleReportClick}
+                className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow"
+              >
+                <FaBullhorn className="w-4 h-4 text-gray-600" />
+              </button>
+            )}
+            <div className="relative">
+              <button
+                ref={shareButtonRef}
+                onClick={handleShareClick}
+                className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow"
+              >
+                <FaShareAlt className="w-4 h-4 text-gray-600" />
+              </button>
+              <div className="absolute top-10 right-0">
+                <SharePopup
+                  isOpen={isSharePopupOpen}
+                  onClose={() => setIsSharePopupOpen(false)}
+                  triggerRef={shareButtonRef}
+                  title={sportsFacility?.facilityName}
+                  description={sportsFacility?.facilityAddress}
+                  className="right-0"
+                />
+              </div>
             </div>
           </div>
         </h2>
@@ -306,28 +378,49 @@ export default function FacilityDetail() {
 
 
       {/* Street View Section */}
-      {sportsFacility?.streetViewUrl && sportsFacility?.streetViewPreview && (
+
+      {(sportsFacility?.refineWgs84Lat && sportsFacility?.refineWgs84Logt) || reportedImage ? (
         <section className="flex flex-col gap-3 mb-8 px-6">
-          <h3 className="font-bold">입구 사진</h3>
+          <h3 className="font-bold">입구 정보</h3>
           <div className="w-full">
             <div className="w-full h-full relative rounded-lg overflow-hidden">
-              <img
-                src={sportsFacility.streetViewPreview}
-                alt="거리뷰 미리보기"
-                className="w-full h-full object-cover rounded"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="absolute top-4 right-4 text-white bg-black/30 backdrop-blur-sm border-none"
-                onClick={handleStreetViewClick}
+              <Swiper
+                modules={[Navigation]}
+                navigation
+                spaceBetween={10}
+                slidesPerView={1}
+                className="w-full h-full [&_.swiper-button-next]:text-black [&_.swiper-button-prev]:text-black [&_.swiper-button-next]:drop-shadow-md [&_.swiper-button-prev]:drop-shadow-md"
               >
-                클릭하여 거리뷰 보기
-              </Button>
+                {sportsFacility?.refineWgs84Lat && sportsFacility?.refineWgs84Logt && (
+                  <SwiperSlide className='relative'>
+                    <div className="absolute top-4 left-4 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-bold z-10">
+                      로드뷰
+                    </div>
+                    <RoadviewContainer
+                      lat={sportsFacility.refineWgs84Lat}
+                      lng={sportsFacility.refineWgs84Logt}
+                    />
+                  </SwiperSlide>
+                )}
+                {reportedImage && (
+                  <SwiperSlide>
+                    <div className="relative w-full h-[300px]">
+                      <img
+                        src={reportedImage}
+                        alt="제보된 입구 사진"
+                        className="w-full h-full object-cover rounded"
+                      />
+                      <div className="absolute top-4 left-4 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-bold">
+                        제보된 사진
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                )}
+              </Swiper>
             </div>
           </div>
         </section>
-      )}
+      ) : null}
 
       {/* Course Info Section */}
       {data?.sportsFacility?.disabilitySportsFacility && (
@@ -354,27 +447,27 @@ export default function FacilityDetail() {
       )}
 
       {!isSportsFacility && (
-      <section className="flex flex-col gap-3 mb-8 px-6">
-        <h3 className="font-bold">예약 시간</h3>
-        <Calendar
-          value={selectedDate ? selectedDate[0] : null}
-          onChange={(date) => {
-            if (date) {
-              setSelectedDate([date, selectedDate?.[1] || '']);
-            }
-          }}
-          showTimeSlots={true}
-          timeValue={selectedDate ? selectedDate[1] : null}
-          onTimeChange={(time) => {
-            if (selectedDate) {
-              setSelectedDate([selectedDate[0], time]);
-            }
-          }}
-          minDate={dayjs().startOf('day').toDate()}
-          maxDate={dayjs().add(1, 'month').endOf('day').toDate()}
-          disabledSlots={[{ date: dayjs().format('YYYY-MM-DD') }]}
-        />
-      </section>
+        <section className="flex flex-col gap-3 mb-8 px-6">
+          <h3 className="font-bold">예약 시간</h3>
+          <Calendar
+            value={selectedDate ? selectedDate[0] : null}
+            onChange={(date) => {
+              if (date) {
+                setSelectedDate([date, selectedDate?.[1] || '']);
+              }
+            }}
+            showTimeSlots={true}
+            timeValue={selectedDate ? selectedDate[1] : null}
+            onTimeChange={(time) => {
+              if (selectedDate) {
+                setSelectedDate([selectedDate[0], time]);
+              }
+            }}
+            minDate={dayjs().startOf('day').toDate()}
+            maxDate={dayjs().add(1, 'month').endOf('day').toDate()}
+            disabledSlots={[{ date: dayjs().format('YYYY-MM-DD') }]}
+          />
+        </section>
       )}
       <section className="flex flex-col gap-3 mb-8 px-6">
         <h3 className="font-bold">예약 알림</h3>
@@ -444,6 +537,8 @@ export default function FacilityDetail() {
           </Button>
         )}
       </section>
+
+      <ReportPopup />
     </div>
   );
 }

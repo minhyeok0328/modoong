@@ -83,3 +83,9 @@ body {
 .message-input-container {
   transition: transform 0.3s ease-out, bottom 0.3s ease-out;
 }
+
+/* Swiper Navigation Button Override */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #fff !important;
+}

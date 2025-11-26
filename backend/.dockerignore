@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist
+build
+coverage
+.nyc_output
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose.yml
+*.dockerfile
+
+# Tests
+test
+coverage 

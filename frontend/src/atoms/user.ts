@@ -5,6 +5,7 @@ import { UserState } from '../types/user';
 const sessionJSONStorage = createJSONStorage<UserState>(() => sessionStorage);
 
 const defaultUserState: UserState = {
+  userType: 0,
   username: '',
   address: '',
   accessibilityStatus: {},

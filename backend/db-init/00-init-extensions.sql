@@ -1,0 +1,3 @@
+-- PostGIS 확장 모듈을 활성화합니다.
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

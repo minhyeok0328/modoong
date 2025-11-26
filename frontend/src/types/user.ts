@@ -10,6 +10,7 @@ export interface ActivitySchedule {
 
 export type AccessibilityStatus = Record<string, boolean | string | undefined>;
 export interface RegisterFormState {
+  userType: number;
   name: string;
   address: string;
   agreement: boolean;
@@ -18,9 +19,26 @@ export interface RegisterFormState {
   sportPreference: string[];
   otherSportDescription: string;
   otherDisabilityDescription: string;
+
+  // New fields for UserType 2
+  gender?: string;
+  ageGroup?: string;
+  phoneNumber?: string;
+  email?: string;
+  location?: { lat: number; lng: number; address: string };
+  roles?: string[];
+  volunteerExperience?: boolean;
+  volunteerActivities?: string[];
+  vmsId?: string;
+  assistantCertificate?: boolean;
+  hourlyRate?: string;
+  assistantServices?: string[];
+  guardianLinkedAccount?: string;
+  guardianNotifications?: boolean;
 }
 
 export interface UserState {
+  userType: number;
   username: string;
   address: string;
   accessibilityStatus: AccessibilityStatus;

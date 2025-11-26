@@ -9,6 +9,7 @@ const sessionJSONStorage = createJSONStorage<RegisterFormState>(() => sessionSto
 export const registerFormAtom = atomWithStorage<RegisterFormState>(
   'registerForm',
   {
+    userType: 0,
     name: '',
     address: '',
     agreement: false,
@@ -24,6 +25,21 @@ export const registerFormAtom = atomWithStorage<RegisterFormState>(
     },
     otherSportDescription: '',
     otherDisabilityDescription: '',
+    // Initialize new fields
+    gender: '',
+    ageGroup: '',
+    phoneNumber: '',
+    email: '',
+    location: { lat: 0, lng: 0, address: '' },
+    roles: [],
+    volunteerExperience: false,
+    volunteerActivities: [],
+    vmsId: '',
+    assistantCertificate: false,
+    hourlyRate: '',
+    assistantServices: [],
+    guardianLinkedAccount: '',
+    guardianNotifications: false,
   },
   sessionJSONStorage
 );

@@ -22,7 +22,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/graphql': {
-        target: 'http://34.64.200.137',
+        target: 'http://146.56.99.254',
         changeOrigin: true,
         secure: false,
       }

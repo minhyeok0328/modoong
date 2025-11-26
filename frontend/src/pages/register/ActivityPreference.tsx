@@ -56,6 +56,7 @@ export default function ActivityPreference() {
             부분이 있을까요?
           </>
         }
+        subText='복수 선택 가능합니다'
         aria-label={`${registerForm.name}님의 체육활동을 도와 드리기 위해 모둥이가 참고해야 할 부분이 있을까요?`}
         className="mb-8"
       />

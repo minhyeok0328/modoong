@@ -40,8 +40,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const [touched, setTouched] = useState(false);
     const [showRequiredError, setShowRequiredError] = useState(false);
 
-    // Error styles appear only after blur and when the field is still empty.
-    const hasError = touched && showRequiredError;
+    // Error styles appear only after blur and when the field is still empty, OR when an external error is provided.
+    const hasError = !!error || (touched && showRequiredError);
 
     const baseInputStyles =
       'block rounded-lg border bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';

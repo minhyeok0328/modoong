@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                String    @db.VarChar(255)
+  address             String?   @db.VarChar(255)
+  latitude            Float?
+  longitude           Float?
+
+  // Status and authentication
+  status              String    @default("temporary") @db.VarChar(50)
+  authProvider        String?   @map("auth_provider") @db.VarChar(50)
+  providerId         String?   @map("provider_id") @db.VarChar(255)
+
+  // Additional information
+  agreement           Boolean   @default(false)
+  accessibilityStatus String?  @map("accessibility_status") @db.VarChar(20)
+  activitySchedule    Json?    @map("activity_schedule") @db.JsonB
+  otherSportDescription String? @map("other_sport_description") @db.VarChar(255)  // 기타 운동 설명
+  otherDisabilityDescription String? @map("other_disability_description") @db.VarChar(255)  // 기타 장애 유형 설명
+  userType            Int      @map("user_type")
+
+  // UserType 2 Fields
+  gender              String?   @db.VarChar(10)
+  ageGroup            String?   @map("age_group") @db.VarChar(20)
+  phoneNumber         String?   @map("phone_number") @db.VarChar(20)
+  email               String?   @db.VarChar(255)
+  roles               String[]  @default([])
+  volunteerExperience Boolean?  @map("volunteer_experience")
+  vmsId               String?   @map("vms_id") @db.VarChar(50)
+  assistantCertificate Boolean? @map("assistant_certificate")
+  hourlyRate          String?   @map("hourly_rate") @db.VarChar(50)
+  guardianNotifications Boolean? @map("guardian_notifications")
+  guardianLinkedAccount String? @map("guardian_linked_account") @db.VarChar(255)
+  assistantServices   String[]  @map("assistant_services") @default([])
+  volunteerActivities String[]  @map("volunteer_activities") @default([])
+
+  // Sport preferences
+  sportPreference     String?  @map("sport_preference") @db.VarChar(20)
+
+  // Timestamps
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([authProvider, providerId])
+  @@index([status])
+  @@map("users")
+}
+
+model DisabilityType {
+  id          Int      @id @default(autoincrement())
+  code        String   @db.VarChar(30)  // armDiscomfort와 같은 시스템 내부 코드
+  name        String   @db.VarChar(30)  // 사용자에게 보여질 이름
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("disability_types")
+}
+
+model SportType {
+  id          Int      @id @default(autoincrement())
+  code        String   @db.VarChar(30)  // soccer, tennis와 같은 시스템 내부 코드
+  name        String   @db.VarChar(30)  // 사용자에게 보여질 이름
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("sport_types")
+}
+
+model SportsFacility {
+  id                      String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  facltCdEncptVl          String?   @map("faclt_cd_encpt_vl")
+  refineWgs84Lat          Float     @map("refine_wgs84_lat")
+  refineWgs84Logt          Float     @map("refine_wgs84_logt")
+  facltDivNm              String?   @map("faclt_div_nm")
+  indutypeNm              String?   @map("indutype_nm")
+  facltTypeNm             String?   @map("faclt_type_nm")
+  facltTelno              String?   @map("faclt_telno")
+  sidoNm                  String?   @map("sido_nm")
+  signguNm                String?   @map("signgu_nm")
+  refineRoadnmAddr        String?   @map("refine_roadnm_addr")
+  siDesc                  String?   @map("si_desc")
+  facltStateNm            String?   @map("faclt_state_nm")
+  facltHmpgAddr           String?   @map("faclt_hmpg_addr")
+  facltOpertFormCd        String?   @map("faclt_opert_form_cd")
+  posesnMainbdNm          String?   @map("posesn_mainbd_nm")
+  posesnMainbdSidoNm      String?   @map("posesn_mainbd_sido_nm")
+  posesnMainbdSignguNm    String?   @map("posesn_mainbd_signgu_nm")
+  chrgpsnDeptNm           String?   @map("chrgpsn_dept_nm")
+  facltMangrTelno         String?   @map("faclt_mangr_telno")
+  inoutdrDivNm            String?   @map("inoutdr_div_nm")
+  audtrmSeatCnt           String?   @map("audtrm_seat_cnt")
+  audtrmAceptncPsncnt     String?   @map("audtrm_aceptnc_psncnt")
+  facltTotAr              String?   @map("faclt_tot_ar")
+  livelhOpenpublYn        String?   @map("livelh_openpubl_yn")
+  livelhGymNm             String?   @map("livelh_gym_nm")
+  utlzGrpNm               String?   @map("utlz_grp_nm")
+  facltCreatStdDe         String?   @map("faclt_creat_std_de")
+  registStatmntDe         String?   @map("regist_statmnt_de")
+  compltnDe               String?   @map("compltn_de")
+  suspnbizDe              String?   @map("suspnbiz_de")
+  clsbizDe                String?   @map("clsbiz_de")
+  nationPhstrnFacltYn     String?   @map("nation_phstrn_faclt_yn")
+  qukprfDesignYn          String?   @map("qukprf_design_yn")
+  selfctrlCheckTargetYn   String?   @map("selfctrl_check_target_yn")
+  registDtm               String?   @map("regist_dtm")
+  updDtm                  String?   @map("upd_dtm")
+  refineLotnoAddr         String?   @map("refine_lotno_addr")
+  refineZipno             String?   @map("refine_zipno")
+
+  // 크롤링 데이터
+  imageSrc                String?   @map("image_src")
+  streetViewUrl           String?   @map("street_view_url")
+  streetViewPreview       String?   @map("street_view_preview") @db.Text
+  amenities               Json?     @map("amenities") @db.JsonB
+
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@map("sports_facilities")
+}
+
+model RehabFacility {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  sigunCd             String    @map("sigun_cd")
+  sigunNm             String    @map("sigun_nm")
+  instNm              String    @map("inst_nm")
+  telno               String?
+  hmpgUrl             String?   @map("hmpg_url")
+  instlStatmntDe      String?   @map("instl_statmnt_de")
+  refineLotnoAddr     String?   @map("refine_lotno_addr")
+  refineRoadnmAddr    String?   @map("refine_roadnm_addr")
+  refineZipCd         String?   @map("refine_zip_cd")
+  refineWgs84Lat      Float     @map("refine_wgs84_lat")
+  refineWgs84Logt      Float     @map("refine_wgs84_logt")
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("rehab_facilities")
+}
+
+model DisabilitySportsFacility {
+  id                    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  bizrno                String    @unique @db.VarChar(20)
+  facilityName          String    @map("facility_name") @db.VarChar(255)
+  facilityOwner         String?   @map("facility_owner") @db.VarChar(255)
+  facilityPhone         String?   @map("facility_phone") @db.VarChar(50)
+  facilityAddress       String    @map("facility_address") @db.VarChar(500)
+  latitude              Float?
+  longitude             Float?
+  vehicleSupport        String?   @map("vehicle_support") @db.VarChar(100)
+  disabilitySupport     String?   @map("disability_support") @db.Text
+  facilityImageBase64   String?   @map("facility_image_base64") @db.Text
+  courseInfo            Json?     @map("course_info") @db.JsonB
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@map("disability_sports_facilities")
+}

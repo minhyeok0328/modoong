@@ -1,6 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Button, SimpleHeader, ProgressBar } from '@/components/common';
-import { routes } from '@/routes';
 import { useAtom } from 'jotai';
 import { isNextButtonEnabledAtom, registerFormAtom } from '@/atoms/register';
 import { useEffect } from 'react';
@@ -14,27 +13,57 @@ export default function RegisterLayout() {
   const [enableNextButton, setEnableNextButton] = useAtom(isNextButtonEnabledAtom);
   const [registerForm] = useAtom(registerFormAtom);
 
-  const registerRoot = routes.find((route) => route.path === REGISTER_BASE);
-  const registerChildren = registerRoot?.children ?? [];
 
-  const pathForIndex = (index: number | undefined) => {
-    if (index === undefined || index < 0 || index >= registerChildren.length) return null;
-    const child = registerChildren[index];
-    return child.path === '' ? REGISTER_BASE : `${REGISTER_BASE}/${child.path}`;
-  };
+
+
 
   // form 데이터 없이 진입 시 루트로 이동 (단, /register 루트는 예외)
   useEffect(() => {
-    if (location.pathname !== REGISTER_BASE && !registerForm?.name) {
+    // UserType 2 collects name in common-onboarding, so we allow it without name
+    const isCommonOnboarding = location.pathname.includes('common-onboarding');
+
+    if (location.pathname !== REGISTER_BASE && !registerForm?.name && !isCommonOnboarding) {
       navigate(REGISTER_BASE);
     }
   }, [registerForm, location.pathname, navigate]);
 
-  const currentStepIndex = registerChildren.findIndex(
-    (_, idx) => location.pathname === pathForIndex(idx)
-  );
+  // Define steps for each user type
+  const TYPE1_STEPS = [
+    '', // Intro
+    'privacy-agreement',
+    'activity-region',
+    'activity-preference',
+    'sport-preference',
+    'activity-schedule',
+    'register-complete',
+  ];
+
+  const TYPE2_STEPS = [
+    '', // Intro
+    'common-onboarding',
+    'role-selection',
+    'terms-and-conditions',
+    'role-questions',
+    'welcome',
+    'promises',
+    'register-complete', // Reusing complete page or create new one if needed
+  ];
+
+  const currentSteps = registerForm.userType === 2 ? TYPE2_STEPS : TYPE1_STEPS;
+
+  // Find current step index in the specific flow
+  const currentStepIndex = currentSteps.findIndex((path) => {
+    const fullPath = path === '' ? REGISTER_BASE : `${REGISTER_BASE}/${path}`;
+    return location.pathname === fullPath;
+  });
+
   const nextPath =
-    location.pathname === REGISTER_BASE ? pathForIndex(1) : pathForIndex(currentStepIndex + 1);
+    currentStepIndex >= 0 && currentStepIndex < currentSteps.length - 1
+      ? currentSteps[currentStepIndex + 1] === ''
+        ? REGISTER_BASE
+        : `${REGISTER_BASE}/${currentSteps[currentStepIndex + 1]}`
+      : null;
+
   const isRegisterComplete = location.pathname === COMPLETE_PATH;
 
   const handleBackClick = () => {
@@ -65,7 +94,7 @@ export default function RegisterLayout() {
         {currentStepIndex >= 0 && !isRegisterComplete && (
           <ProgressBar
             currentStep={currentStepIndex + 1}
-            totalSteps={registerChildren.length}
+            totalSteps={currentSteps.length}
             label="회원가입 진행률"
           />
         )}
@@ -83,7 +112,7 @@ export default function RegisterLayout() {
             className="sr-only"
             role="status"
           >
-            {currentStepIndex >= 0 && `회원가입 ${currentStepIndex + 1}단계 중 ${registerChildren.length}단계`}
+            {currentStepIndex >= 0 && `회원가입 ${currentStepIndex + 1}단계 중 ${currentSteps.length}단계`}
           </div>
           <Outlet />
         </main>
@@ -102,12 +131,14 @@ export default function RegisterLayout() {
           disabled={isRegisterComplete ? false : !enableNextButton}
           aria-describedby={isRegisterComplete ? undefined : "next-button-desc"}
         >
-          {isRegisterComplete ? '시작하기' : '다음'}
+          {isRegisterComplete
+            ? (registerForm.userType === 2 ? '뛰러 가기' : '시작하기')
+            : location.pathname.includes('promises') ? '약속할게요' : '다음'}
         </Button>
         {!isRegisterComplete && (
           <div id="next-button-desc" className="sr-only">
             {enableNextButton
-              ? `다음 단계로 이동합니다. 현재 ${registerChildren.length}단계 중 ${currentStepIndex + 1}단계`
+              ? `다음 단계로 이동합니다. 현재 ${currentSteps.length}단계 중 ${currentStepIndex + 1}단계`
               : '필수 정보를 입력한 후 다음 단계로 진행할 수 있습니다.'
             }
           </div>

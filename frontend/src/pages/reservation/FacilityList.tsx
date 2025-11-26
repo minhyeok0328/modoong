@@ -1,4 +1,5 @@
 import { FilterModal, Button } from '@/components/common';
+import { ReportPopup } from '@/components/common/popup';
 import { FacilityCard } from '@/components/reservation';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
@@ -504,6 +505,8 @@ export default function FacilityList() {
         onApply={handleFacilityOptionsModalApply}
         onReset={handleFacilityOptionsModalReset}
       />
+
+      <ReportPopup />
     </div>
   );
 }

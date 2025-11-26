@@ -57,23 +57,42 @@ export default function RegisterComplete() {
       <PageTitle
         ref={headingRef}
         text={
-          <>
-            <b>{registerForm.name}님,</b>
-            {'\n'}
-            저희와 함께해줘서{'\n'}
-            너무 고마워요:){'\n'}
-            {'\n'}
-            도움이 필요하면{'\n'}
-            언제든 <b>모둥이</b>를{'\n'}
-            불러주세요!
-          </>
+          registerForm.userType === 2 ? (
+            <>
+              자, 이제{'\n'}
+              <b>모두의 운동장</b>에서{'\n'}
+              함께 뛰어볼까요?
+            </>
+          ) : (
+            <>
+              <b>{registerForm.name}님,</b>
+              {'\n'}
+              저희와 함께해줘서{'\n'}
+              너무 고마워요:){'\n'}
+              {'\n'}
+              도움이 필요하면{'\n'}
+              언제든 <b>모둥이</b>를{'\n'}
+              불러주세요!
+            </>
+          )
         }
-        aria-label={`${registerForm.name}님, 저희와 함께해줘서 너무 고마워요:) 도움이 필요하면 언제든 모둥이를 불러주세요!`}
+        subText={
+          registerForm.userType === 2
+            ? '지금 가까운 곳에서 도움이 필요한 운동 일정을 확인하고,\n첫 걸음을 함께 시작해 보세요.'
+            : undefined
+        }
+        aria-label={
+          registerForm.userType === 2
+            ? '자, 이제 모두의 운동장에서 함께 뛰어볼까요? 지금 가까운 곳에서 도움이 필요한 운동 일정을 확인하고, 첫 걸음을 함께 시작해 보세요.'
+            : `${registerForm.name}님, 저희와 함께해줘서 너무 고마워요:) 도움이 필요하면 언제든 모둥이를 불러주세요!`
+        }
         className="mb-8"
       />
-      <p className="text-sm text-gray-500" role="note">
-        '안녕 모둥이' 라고 말하면 AI 비서 모둥이가 등장해요
-      </p>
+      {registerForm.userType !== 2 && (
+        <p className="text-sm text-gray-500" role="note">
+          '안녕 모둥이' 라고 말하면 AI 비서 모둥이가 등장해요
+        </p>
+      )}
     </div>
   );
 }

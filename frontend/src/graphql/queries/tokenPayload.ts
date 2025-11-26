@@ -4,6 +4,7 @@ import { gql } from '@apollo/client';
 export const GET_TOKEN_PAYLOAD = gql`
   query TokenPayload {
     tokenPayload {
+      userType
       username
       address
       accessibilityStatus
@@ -16,6 +17,7 @@ export const GET_TOKEN_PAYLOAD = gql`
 `;
 
 export interface TokenPayload {
+  userType: number;
   username: string;
   address: string;
   accessibilityStatus: AccessibilityStatus;

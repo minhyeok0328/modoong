@@ -1,0 +1,339 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: ID!
+  name: String!
+  userType: Int!
+  address: String
+  latitude: Float
+  longitude: Float
+  status: String!
+  authProvider: String
+  providerId: String
+  agreement: Boolean!
+  accessibilityStatus: String
+  activitySchedule: JSONObject
+  sportPreference: String
+  otherSportDescription: String
+  otherDisabilityDescription: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type AuthToken {
+  success: Boolean!
+}
+
+type TokenPayload {
+  sub: String!
+  username: String!
+  address: String
+  accessibilityStatus: String
+  activitySchedule: JSONObject
+  sportPreference: String
+  otherSportDescription: String
+  otherDisabilityDescription: String
+  userType: Float!
+}
+
+type DisabilitySportsFacility {
+  id: ID!
+  bizrno: String!
+  facilityName: String!
+  facilityOwner: String
+  facilityPhone: String
+  facilityAddress: String!
+  latitude: Float
+  longitude: Float
+  vehicleSupport: String
+  disabilitySupport: String
+  facilityImageBase64: String
+  courseInfo: [JSONObject!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SportsFacility {
+  id: ID!
+  facltCdEncptVl: String
+  refineWgs84Lat: Float
+  refineWgs84Logt: Float
+
+  """사용자로부터의 거리 (km)"""
+  distance: Float
+  facltDivNm: String
+  indutypeNm: String
+  facltTypeNm: String
+  facltTelno: String
+  sidoNm: String
+  signguNm: String
+  refineRoadnmAddr: String
+  siDesc: String
+  facltStateNm: String
+  facltHmpgAddr: String
+  facltOpertFormCd: String
+  posesnMainbdNm: String
+  posesnMainbdSidoNm: String
+  posesnMainbdSignguNm: String
+  chrgpsnDeptNm: String
+  facltMangrTelno: String
+  inoutdrDivNm: String
+  audtrmSeatCnt: String
+  audtrmAceptncPsncnt: String
+  facltTotAr: String
+  livelhOpenpublYn: String
+  livelhGymNm: String
+  utlzGrpNm: String
+  facltCreatStdDe: String
+  registStatmntDe: String
+  compltnDe: String
+  suspnbizDe: String
+  clsbizDe: String
+  nationPhstrnFacltYn: String
+  qukprfDesignYn: String
+  selfctrlCheckTargetYn: String
+  registDtm: String
+  updDtm: String
+  refineLotnoAddr: String
+  refineZipno: String
+
+  """시설 대표 이미지 URL"""
+  imageSrc: String
+
+  """네이버 지도 거리뷰 URL"""
+  streetViewUrl: String
+
+  """거리뷰 미리보기 이미지 (Base64)"""
+  streetViewPreview: String
+
+  """시설 편의시설 목록"""
+  amenities: [String!]
+
+  """장애인체육시설 이미지 (Base64)"""
+  facilityImageBase64: String
+
+  """연관된 장애인체육시설 정보"""
+  disabilitySportsFacility: DisabilitySportsFacility
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SportsFacilitiesPaginationOutput {
+  """체육시설 목록"""
+  facilities: [SportsFacility!]!
+
+  """총 개수"""
+  totalCount: Int!
+
+  """다음 페이지가 있는지 여부"""
+  hasNext: Boolean!
+
+  """이전 페이지가 있는지 여부"""
+  hasPrevious: Boolean!
+}
+
+type CrawlingResult {
+  success: Int!
+  total: Int!
+  errors: [String!]!
+}
+
+type RehabFacility {
+  id: ID!
+
+  """시군코드"""
+  sigunCd: String!
+
+  """시군명"""
+  sigunNm: String!
+
+  """기관명"""
+  instNm: String!
+
+  """전화번호"""
+  telno: String
+
+  """홈페이지 URL"""
+  hmpgUrl: String
+
+  """설치신고일"""
+  instlStatmntDe: String
+
+  """소재지 지번 주소"""
+  refineLotnoAddr: String
+
+  """소재지 도로명 주소"""
+  refineRoadnmAddr: String
+
+  """소재지 우편번호"""
+  refineZipCd: String
+
+  """WGS84 위도"""
+  refineWgs84Lat: Float!
+
+  """WGS84 경도"""
+  refineWgs84Logt: Float!
+
+  """생성일시"""
+  createdAt: DateTime!
+
+  """수정일시"""
+  updatedAt: DateTime!
+}
+
+type DisabilityTypeModel {
+  id: Int!
+  code: String!
+  name: String!
+}
+
+type SportTypeModel {
+  id: Int!
+  code: String!
+  name: String!
+}
+
+type EssayResponse {
+  """에세이 제목 (최대 30자)"""
+  title: String!
+
+  """에세이 내용 (최대 500자)"""
+  content: String!
+
+  """에세이 댓글 (최대 30자)"""
+  comment: String!
+}
+
+type Query {
+  hello: String!
+  disabilityTypes: [DisabilityTypeModel!]!
+  sportTypes: [SportTypeModel!]!
+  tokenPayload: TokenPayload!
+  topUsers: [User!]!
+  sportsFacilities: [SportsFacility!]!
+
+  """체육시설 ID로 상세 정보를 조회합니다."""
+  sportsFacility(id: String!): SportsFacility
+  nearbySportsFacilities(latitude: Float!, longitude: Float!, maxDistance: Float, limit: Float, facilityType: String): [SportsFacility!]!
+
+  """로그인한 사용자 위치 기준 가장 가까운 체육시설 목록을 페이징으로 반환합니다."""
+  nearbySportsFacilitiesForUser(paginationInput: SportsFacilitiesPaginationInput!): SportsFacilitiesPaginationOutput!
+
+  """체육시설 유형 목록을 반환합니다."""
+  sportsFacilityTypes: [String!]!
+
+  """체육시설 시설 편의 시설 목록을 반환합니다."""
+  sportsFacilityAmenities: [String!]!
+  rehabFacilities: [RehabFacility!]!
+}
+
+input SportsFacilitiesPaginationInput {
+  """건너뛸 개수"""
+  skip: Int = 0
+
+  """한 페이지에 보여줄 개수"""
+  take: Int = 20
+
+  """시설 유형으로 필터링"""
+  facilityType: String
+
+  """소유 주체 필터(disability | public | sports)"""
+  filter: String
+
+  """최대 거리 (km 단위)"""
+  maxDistance: Int
+
+  """편의시설 필터"""
+  amenities: [String!]
+}
+
+type Mutation {
+  login(username: String!, password: String!): AuthToken!
+  refreshToken: AuthToken!
+  signUp(signUpUserInput: SignUpUserInput!): Boolean!
+
+  """체육시설 데이터를 수동으로 동기화합니다."""
+  syncSportsFacilities: String!
+
+  """네이버 지도에서 체육시설 데이터를 크롤링합니다."""
+  crawlSportsFacilities: CrawlingResult!
+
+  """KSPO 장애인스포츠강좌이용권 시설 데이터를 크롤링합니다."""
+  crawlDisabilitySportsFacilities: CrawlingResult!
+
+  """재활 체육시설 데이터를 수동으로 동기화합니다."""
+  syncRehabFacilities: String!
+
+  """사용자의 운동 경험을 바탕으로 에세이를 생성합니다"""
+  generateEssay(input: GenerateEssayInput!): EssayResponse!
+}
+
+input SignUpUserInput {
+  name: String!
+  userType: Int!
+  address: String!
+  agreement: Boolean!
+  accessibilityStatus: JSONObject!
+  activitySchedule: ActivityScheduleInput!
+  sportPreference: [String!]!
+  otherSportDescription: String
+  otherDisabilityDescription: String
+  gender: String
+  ageGroup: String
+  phoneNumber: String
+  email: String
+  location: LocationInput
+  roles: [String!]
+  volunteerExperience: Boolean
+  vmsId: String
+  assistantCertificate: Boolean
+  hourlyRate: String
+  guardianNotifications: Boolean
+  guardianLinkedAccount: String
+  assistantServices: [String!]
+  volunteerActivities: [String!]
+}
+
+input ActivityScheduleInput {
+  dawn: TimeSlotInput!
+  morning: TimeSlotInput!
+  noon: TimeSlotInput!
+  afternoon: TimeSlotInput!
+  evening: TimeSlotInput!
+  lateNight: TimeSlotInput!
+}
+
+input TimeSlotInput {
+  start: String!
+  end: String!
+  selected: Boolean!
+}
+
+input LocationInput {
+  lat: Float!
+  lng: Float!
+  address: String!
+}
+
+input GenerateEssayInput {
+  """운동 기록 정보"""
+  exercise_record: String!
+
+  """운동 중 느낀 감정"""
+  emotion: String!
+
+  """사용자 추가 생각이나 이야기"""
+  user_additional_thoughts: String!
+}

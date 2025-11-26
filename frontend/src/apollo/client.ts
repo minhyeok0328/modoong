@@ -1,10 +1,9 @@
 import { ApolloClient, InMemoryCache, ApolloLink } from '@apollo/client';
 import { errorLink } from './links/errorLink';
-import { mockLink } from '@/mocks/apollo';
+import { httpLink } from './links/httpLink';
 
 // Compose links. Order matters: from left to right.
-// Replace network HTTP link with local mock link for demo environment.
-const link = ApolloLink.from([errorLink, mockLink]);
+const link = ApolloLink.from([errorLink, httpLink]);
 
 export const client = new ApolloClient({
   link,

@@ -1,4 +1,5 @@
 import { forwardRef, InputHTMLAttributes } from 'react';
+export { default as CheckItem } from './CheckItem';
 
 interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   /** 고유 식별자 및 네이밍 */

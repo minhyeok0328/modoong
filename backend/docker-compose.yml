@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  api-prod:
+    container_name: modufield-backend-prod
+    # Default registry image path updated to the actual project path
+    image: registry.gitlab.com/cappic-gov/modufield-backend:latest
+    ports:
+      - "80:8080"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/modufield
+      - KAKAO_MAP_API_KEY=${KAKAO_MAP_API_KEY}
+      - GG_API_KEY=${GG_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY}
+    command: pnpm start:migrate:prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - modufield-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.0.2-alpine
+    container_name: modufield-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - modufield-network
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgis/postgis:17-3.4-alpine
+    container_name: modufield-postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - modufield-network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=modufield
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -d modufield -c 'SELECT 1 FROM pg_extension WHERE extname = '\\''uuid-ossp'\\'' AND extname = '\\''postgis'\\'';'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  redis-data:
+  postgres-data:
+
+networks:
+  modufield-network:
+    name: modufield-network
+    driver: bridge

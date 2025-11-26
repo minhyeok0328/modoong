@@ -1,0 +1,120 @@
+stages:
+  - build
+  - deploy
+
+# Global variables that apply to all jobs
+variables:
+  # Make sure Node runs in production mode by default
+  NODE_ENV: 'production'
+  # Configure pnpm store path to speed up installation between jobs
+  PNPM_HOME: '/usr/local/share/.pnpm'
+  BUILD_PATH: '$PNPM_HOME:$PATH:/usr/local/share/.npm-global/bin:$PATH'
+  IMAGE_TAG: '$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA'
+  IMAGE_TAG_LATEST: '$CI_REGISTRY_IMAGE:latest'
+  DOCKER_TLS_CERTDIR: ''
+  # React 프로젝트 설정
+  REACT_PROJECT_ID: 'cappic-gov/modufield-frontend'
+
+# ------------------------
+# 2) BUILD STAGE – React build & Docker build & push
+# ------------------------
+
+# 기존 build_app 대체
+docker_build:
+  stage: build
+  when: manual
+  image: docker:27
+  services:
+    - name: docker:27-dind
+      command: ['--host=tcp://0.0.0.0:2375', '--tls=false']
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ''
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker build -t "$IMAGE_TAG" -t "$IMAGE_TAG_LATEST" .
+    - docker push "$IMAGE_TAG"
+    - docker push "$IMAGE_TAG_LATEST"
+  only:
+    - main
+
+# # ------------------------
+# # 3) DEPLOY STAGE
+# # ------------------------
+# production_deploy:
+#   stage: deploy
+#   image: alpine:latest
+#   before_script:
+#     - apk add --no-cache openssh-client git
+#     # Prepare SSH key for authentication
+#     - mkdir -p ~/.ssh
+#     - echo "$GCP_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+#     - chmod 600 ~/.ssh/id_rsa
+#     # Configure SSH to skip host key checking
+#     - |
+#       cat >> ~/.ssh/config <<EOF
+#       Host $GCP_IP
+#         StrictHostKeyChecking no
+#         UserKnownHostsFile=/dev/null
+#       EOF
+#   script:
+#     - |
+#       # 변수들을 원격 스크립트에 안전하게 인자로 전달합니다.
+#       ssh -o StrictHostKeyChecking=no "$GCP_USERNAME@$GCP_IP" 'bash -s' \
+#         "$GCP_USERNAME" \
+#         "$GITLAB_DEPLOY_USERNAME" \
+#         "$GITLAB_DEPLOY_TOKEN" \
+#         "$CI_JOB_TOKEN" \
+#         "$CI_REGISTRY" \
+#         "$KAKAO_MAP_API_KEY" \
+#         "$GG_API_KEY" \
+#         "$ANTHROPIC_API_KEY" << EOSSH
+
+#       set -e
+
+#       # SSH를 통해 전달받은 인자들을 변수에 할당합니다.
+#       REMOTE_GCP_USER="\$1"
+#       REMOTE_GITLAB_USER="\$2"
+#       REMOTE_GITLAB_TOKEN="\$3"
+#       REMOTE_CI_JOB_TOKEN="\$4"
+#       REMOTE_CI_REGISTRY="\$5"
+#       REMOTE_KAKAO_KEY="\$6"
+#       REMOTE_GG_KEY="\$7"
+#       REMOTE_ANTHROPIC_KEY="\$8"
+
+#       echo "--- [REMOTE DEBUG] Received user: \$REMOTE_GITLAB_USER"
+
+#       REPO_URL="https://\$REMOTE_GITLAB_USER:\$REMOTE_GITLAB_TOKEN@gitlab.com/cappic-gov/modufield-backend.git"
+
+#       cd "/home/\$REMOTE_GCP_USER/"
+
+#       if [ ! -d "modufield-backend/.git" ]; then
+#         rm -rf modufield-backend
+#         git clone "\$REPO_URL" modufield-backend
+#       fi
+
+#       cd modufield-backend
+#       git remote set-url origin "\$REPO_URL"
+#       git pull origin main
+
+#       sudo docker login -u gitlab-ci-token -p "\$REMOTE_CI_JOB_TOKEN" "\$REMOTE_CI_REGISTRY"
+
+#       cat > .env <<ENVFILE
+#       KAKAO_MAP_API_KEY=\$REMOTE_KAKAO_KEY
+#       GG_API_KEY=\$REMOTE_GG_KEY
+#       ANTHROPIC_API_KEY=\$REMOTE_ANTHROPIC_KEY
+#       ENVFILE
+#       sudo docker compose down
+#       sudo docker compose pull
+#       sudo docker compose up -d
+
+#       EOSSH
+#   environment:
+#     name: production
+#     url: 'http://$GCP_IP'
+#   only:
+#     - main
+#   needs:
+#     - job: docker_build
+#       artifacts: false
